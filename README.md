@@ -1,0 +1,1 @@
+# joomla-content-gallery

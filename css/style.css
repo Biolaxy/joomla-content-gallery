@@ -1,0 +1,26 @@
+/* (B) THUMBNAILS */
+.gallery img {
+  cursor: pointer;
+  /* FILL, CONTAIN, COVER, SCALE-DOWN : USE WHICHEVER YOU LIKE */
+  object-fit: cover;
+}
+.gallery img:fullscreen { object-fit: contain; }
+
+/* IMAGE GRID STYLES
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.image-grid img {
+  box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s;
+}
+
+.image-grid a:hover img {
+  box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.35);
+}
+
+.image-grid div {
+  display: flex;
+  min-height: 10vw;
+  align-items: center;
+  justify-content: center;
+}

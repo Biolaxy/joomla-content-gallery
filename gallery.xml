@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension method="upgrade" type="plugin" group="content">
+    <name>PLG_CONTENT_GALLERY</name>
+    <version>1.0</version>
+    <description>PLG_CONTENT_GALLERY_DESCRIPTION</description>
+    <author>Biolaxy</author>
+    <creationDate>Today</creationDate>
+    <copyright>(C) 2024 Biolaxy</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <namespace path="src">Biolaxy\Plugin\Content\Gallery</namespace>
+    <files>
+        <folder plugin="gallery">services</folder>
+        <folder>src</folder>
+        <folder>language</folder>
+        <folder>css</folder>
+        <folder>js</folder>
+    </files>
+    <languages>
+        <language tag="de-DE">language/de-DE/plg_content_gallery.ini</language>
+        <language tag="de-DE">language/de-DE/plg_content_gallery.sys.ini</language>
+        <language tag="en-GB">language/en-GB/plg_content_gallery.ini</language>
+        <language tag="en-GB">language/en-GB/plg_content_gallery.sys.ini</language>
+    </languages>
+    <config>
+    	<fields name="params">
+    		<fieldset name="basic">
+    			<field
+                    name="gallery-folder"
+                    type="folderlist"
+                    default="/"
+                    label="PLG_CONTENT_GALLERY_SELECT_FOLDER"
+                    directory="images"
+                    filter=""
+                    exclude=""
+                    stripext=""
+                    hide_none="true"
+                    recursive="true"
+                />
+    		</fieldset>
+    	</fields>
+	</config>
+</extension>

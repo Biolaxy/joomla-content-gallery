@@ -4,8 +4,8 @@
  * @package     Joomla.Plugin
  * @subpackage  Content.Gallery
  *
- * @copyright   (C) 2024 Biolaxy
- * @license     MIT License
+ * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 namespace Biolaxy\Plugin\Content\Gallery\Extension;
@@ -52,7 +52,7 @@ final class Gallery extends CMSPlugin
         if (!\is_object($article) || !property_exists($article, 'text') || \is_null($article->text)) {
             return;
         }
-        
+
         //----------------------------------------------------------------------------------------------------------
         
         //getters
@@ -76,6 +76,27 @@ final class Gallery extends CMSPlugin
         
         // Ersetze den Shortcode durch HTML für die Galerie
         $article->text = preg_replace_callback($regex, [$this, 'renderGallery'], $article->text);
+        
+        //----------------------------------------------------------------------------------------------------------
+        
+        // Regex für die Erkennung des hello-Shortcodes
+        $regexh = '/\{hello\}(.*?)\{\/hello\}/s';
+        
+        // Ersetze den Shortcode durch HTML für die Galerie
+        $article->text = preg_replace_callback($regexh, [$this, 'renderHello'], $article->text);
+        
+        //----------------------------------------------------------------------------------------------------------
+        
+        // Regex für die Erkennung des Gallery-Shortcodes
+        $regexi = '/\{image\}(.*?)\{\/image\}/s';
+        
+        // Ersetze den Shortcode durch HTML für die Galerie
+        $article->text = preg_replace_callback($regexi, [$this, 'renderImage'], $article->text); 
+        
+        //----------------------------------------------------------------------------------------------------------
+        
+        // Config Shortcodes
+        $this->renderConfig($article);
     }
     
     private function renderGallery($matches)
@@ -90,7 +111,7 @@ final class Gallery extends CMSPlugin
         $gallery_folder = $this->params->get('gallery-folder','/');
         
         // Images Ordner
-        $folder = "/var/www/vhosts/hosting143814.a2e85.netcup.net/test.biolaxy.de/httpdocs/images/";
+        $folder = getcwd()."/images/";
         
         $galleryBody = $matches[1];
         
@@ -149,5 +170,100 @@ EOT;
         //return $galleryHtml;
         
         return $output;
+    }
+    
+    private function renderImage($matches)
+    {
+        // Language Plugin laden
+        $this->loadLanguage();
+        
+        // Get a handle to the Joomla! application object
+        $application = Factory::getApplication();
+        
+        $folder = getcwd()."/images/";
+        
+        $file = $matches[1];
+        
+        if(File::exists($folder.$file)) {
+            $full_path = "/images/".$file;
+        } else {
+            return $application->enqueueMessage('Die angegebene Datei existiert nicht<br>Datei: '.$file, 'error');
+        }
+        
+        $output = <<<EOT
+<section class="image-grid">
+    <div class="container-xxl">
+        <div class="row gy-4" style="justify-content: left;">
+            <div class="col-12 col-sm-6 col-md-4 gallery">
+                <img width="1920" height="1280" src="$full_path" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+EOT;
+        
+        return $output;
+    }
+    
+    private function renderHello($matches)
+    {
+        // Language Plugin laden
+        $this->loadLanguage();
+        
+        $helloBody = $matches[1];
+        
+        if($helloBody == "") {
+            //echo "Body leer";
+            $hello = "Hallo Welt!";
+        } else {
+            //echo "Body nicht leer";
+            $hello = $helloBody;
+        }
+
+        $output = "<h1>$hello</h1>";
+        
+        return $output;
+    }
+    
+    private function renderConfig($article)
+    {
+        $text = $article->text; // text of the article
+        $config = Factory::getApplication()->getConfig()->toArray();  // config params as an array
+            // (we can't do a foreach over the config params as a Registry because they're protected)
+        
+        // the following is just code to replace {configname} with the parameter value
+        $offset = 0;
+        // find opening curly brackets ...
+        while (($start = strpos($text, "{", $offset)) !== false) {
+            // find the corresponding closing bracket and extract the "shortcode"
+            if ($end = strpos($text, "}", $start)) {
+               $shortcode = substr($text, $start + 1, $end - $start - 1);
+               
+               // cycle through the config array looking for a match
+               $match_found = false;
+               foreach ($config as $key => $value) {
+                   if ($key === $shortcode) {
+                       $text = substr_replace($text, htmlspecialchars($value), $start, $end - $start + 1);
+                       $match_found = true;
+                       break;
+                   }
+                } 
+                
+                // if no match found replace it with an error string
+                if (!$match_found) {
+                    $this->loadLanguage();  // you need to load the plugin's language constants before using them
+                    // (alternatively you can set:  protected $autoloadLanguage = true; and Joomla will load it for you)
+                    $text = substr_replace($text, Text::_('PLG_CONTENT_SHORTCODES_NO_MATCH'), $start, $end - $start + 1);
+                }
+                
+            } else {
+               break;
+            }
+           
+           $offset = $end;
+        }
+
+        // now update the article text with the processed text
+        $article->text = $text;
     }
 }
